@@ -35,12 +35,16 @@ def main():
     s.sendall(seq)
 
     # Receive the web response
+    decoded = ""
     while True:
-        d = s.recv(4096)
-        if len(d) == 0:
+        data = s.recv(4096)
+        decoded += data.decode("ISO-8859-1")
+        if len(data) == 0:
             # Close socket when done
             s.close()
             break
 
+    print(decoded)
+    
 if __name__ == "__main__":
     main()
