@@ -12,7 +12,7 @@ def main():
     checkNumArgs(args)
 
     if len(args) > 1:
-        port = args[1]
+        port = int(args[1])
     else:
         port = 28333
 
@@ -20,7 +20,14 @@ def main():
     s = socket.socket()
 
     # Bind the socket to a port: bind()
-    s.bind(('', port))
+    # Error handling for bind is from geeksforgeeks.org
+    try:
+        s.bind(('', port))
+    except socket.error as message:
+        print('Bind failed. Error Code:'
+              + str(message[0]) + ' Message ' 
+              + message[1])
+        exit(1)
 
     # Set the socket up to listen: listen()
     s.listen()
@@ -28,11 +35,12 @@ def main():
     # Accept new connections (returns a tuple)
     while True:
         new_conn = s.accept()
+        print(f'New Socket: {new_conn[0]}, Address: {new_conn[1]}')
         new_socket = new_conn[0]
 
         # Receive the request from client in loop
         while True:
-            data = new_socket.recv()
+            data = new_socket.recv(4096)
             decoded = data.decode("ISO-8859-1")
             if decoded == "\r\n\r\n":
                 break

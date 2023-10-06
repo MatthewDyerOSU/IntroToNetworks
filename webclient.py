@@ -22,6 +22,7 @@ def main():
     s = socket.socket()
     s.connect((address, port))
 
+
     # Build and send the HTTP request
     req = ('GET / HTTP/1.1\r\n'
            f'Host: {address}\r\n'
