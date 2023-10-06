@@ -6,14 +6,12 @@ def checkNumArgs(argv):
         print("Incorrect number of arguments")
         exit(1)
 
-
 def main():
-
+    args = sys.argv
     # Check input
-    checkNumArgs(sys.argv)
+    checkNumArgs(args)
 
     # Establish address and port number
-    args = sys.argv
     address = args[1]
     if len(args) > 2:
         port = args[2]
@@ -31,8 +29,8 @@ def main():
            '\r\n')
     
     # Encode string to bytes
-    seq = req.encode("ISO-8859-1")
-    s.sendall(seq)
+    bytes = req.encode("ISO-8859-1")
+    s.sendall(bytes)
 
     # Receive the web response
     decoded = ""
