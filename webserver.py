@@ -31,35 +31,46 @@ def main():
 
     # Set the socket up to listen: listen()
     s.listen()
+    print(f"Server listening on port {port}")
 
     # Accept new connections (returns a tuple)
     while True:
-        new_conn = s.accept()
-        print(f'New Socket: {new_conn[0]}, Address: {new_conn[1]}')
-        new_socket = new_conn[0]
+        new_conn, address = s.accept()
+        print(f'New Socket: {new_conn}, Address: {address}')
+        new_socket = new_conn
 
         # Receive the request from client in loop
+        request_data = b''
+
         while True:
             data = new_socket.recv(4096)
-            decoded = data.decode("ISO-8859-1")
-            if decoded == "\r\n\r\n":
+            print(f'Data: {data}')
+            if not data:
+                break
+            request_data += data
+
+            #Check for end of request
+            if b'\r\n\r\n' in request_data:
                 break
 
+        decoded = request_data.decode("ISO-8859-1")
+        print(f'Decoded: {decoded}')
+
         res = ('HTTP/1.1 200 OK\r\n'
-                    'Content-Type: text/plain\r\n'
-                    'Content-Length: 6\r\n'
-                    'Connection: close\r\n'
-                    '\r\n'
-                    'Hello!\r\n'
-                    '\r\n')
+                'Content-Type: text/plain\r\n'
+                'Content-Length: 6\r\n'
+                'Connection: close\r\n'
+                '\r\n'
+                'Hello!\r\n')
+        
+        bytes = res.encode("ISO-8859-1")
+        print(f'Bytes: {bytes}')
         
         # Send the response
-        bytes = res.encode("ISO-8859-1")
-        s.sendall(bytes)
+        new_socket.sendall(bytes)
 
         # Close the new socket
         new_socket.close()
-
     # End loop
 
 
