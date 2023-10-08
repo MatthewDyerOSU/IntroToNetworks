@@ -43,7 +43,7 @@ def main():
             s.close()
             break
 
-    print(decoded)
+    # print(decoded)
     
 if __name__ == "__main__":
     main()

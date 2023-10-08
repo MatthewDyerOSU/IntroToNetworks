@@ -36,7 +36,7 @@ def main():
     # Accept new connections (returns a tuple)
     while True:
         new_conn, address = s.accept()
-        print(f'New Socket: {new_conn}, Address: {address}')
+        # print(f'New Socket: {new_conn}, Address: {address}')
         new_socket = new_conn
 
         # Receive the request from client in loop
@@ -44,7 +44,7 @@ def main():
 
         while True:
             data = new_socket.recv(4096)
-            print(f'Data: {data}')
+            # print(f'Data: {data}')
             if not data:
                 break
             request_data += data
@@ -54,7 +54,7 @@ def main():
                 break
 
         decoded = request_data.decode("ISO-8859-1")
-        print(f'Decoded: {decoded}')
+        # print(f'Decoded: {decoded}')
 
         res = ('HTTP/1.1 200 OK\r\n'
                 'Content-Type: text/plain\r\n'
@@ -64,7 +64,7 @@ def main():
                 'Hello!\r\n')
         
         bytes = res.encode("ISO-8859-1")
-        print(f'Bytes: {bytes}')
+        # print(f'Bytes: {bytes}')
         
         # Send the response
         new_socket.sendall(bytes)
