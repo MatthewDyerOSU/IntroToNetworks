@@ -1,5 +1,6 @@
 import socket
 import sys
+import os
 
 def checkNumArgs(argv):
     # if len(argv) != 1 and len(argv) != 2:
@@ -27,6 +28,7 @@ def bindSocket(sock, port):
 def receiveRequest(sock):
     request_data = b''
 
+    # receive data in loop until blank line reached (\r\n\r\n)
     while True:
         data = sock.recv(4096)
         # print(f'Data: {data}')
@@ -39,17 +41,51 @@ def receiveRequest(sock):
             break
     return request_data
 
+def parseRequest(request):
+    lines = request.split("\r\n")
+    firstLine = lines[0]
+    firstLineParts = firstLine.split()
+    method = firstLineParts[0]
+    path = firstLineParts[1]
+    protocol = firstLineParts[2]
+    return method, path, protocol
+
+def getFileName(fullPath):
+    pathAndFile = os.path.split(fullPath)
+    pathOnly = pathAndFile[0]
+    fileName = pathAndFile[1]
+    return pathOnly, fileName
+
+def getExtension(fileName):
+    nameAndExt = os.path.splitext(fileName)
+    name = nameAndExt[0]
+    extension = nameAndExt[1]
+    return name, extension
+
+def readFile(fileName):
+    try:
+        with open(fileName) as fp:
+            data = fp.read()
+            return data
+    except:
+        return ""
+
 def buildResponse(code, mime, length, body):
     res = (f'HTTP/1.1 {code}\r\n'
             f'Content-Type: {mime}\r\n'
             f'Content-Length: {length}\r\n'
             'Connection: close\r\n'
             '\r\n'
-            f'{body}\r\n')
+            f'{body}')
     return res
 
 def main():
     args = sys.argv
+
+    extDict = {
+        ".txt": "text/plain",
+        ".html": "text/html"
+    }
 
     checkNumArgs(args)
 
@@ -67,28 +103,43 @@ def main():
 
     # Accept new connections (returns a tuple)
     while True:
-        new_conn, address = s.accept()
+        newConn, address = s.accept()
         # print(f'New Socket: {new_conn}, Address: {address}')
-        new_socket = new_conn
+        newSocket = newConn
 
         # Receive the request from client in loop
-        request_data = receiveRequest(new_socket)
-        
-        # decoded = request_data.decode("ISO-8859-1")
-        # print(f'Decoded: {decoded}')
+        requestData = receiveRequest(newSocket)
 
-        # Build the response
-        res = buildResponse("200 OK", "text/plain", "6", "Hello!")
+        # Convert data into bytes
+        requestBytes = requestData.decode("ISO-8859-1")
+
+        # Parse the request, splitting off the method, path and protocol
+        method, path, protocol = parseRequest(requestBytes)
+
+        # Parse the path plus filename, splitting them from eachother
+        pathOnly, fileName = getFileName(path)
+
+        #Parse the filename, splitting off the extension
+        nameOnly, extension = getExtension(fileName)
+
+        # Read the file in
+        data = readFile(fileName)
+
+        if len(data) == 0:
+            res = buildResponse("404 Not Found", "text/plain", "13", "404 not found")
+        else:
+            # Build the response
+            res = buildResponse("200 OK", extDict[extension], len(data), data)
         
         # Encode the response
         bytes = res.encode("ISO-8859-1")
         # print(f'Bytes: {bytes}')
         
         # Send the response
-        new_socket.sendall(bytes)
+        newSocket.sendall(bytes)
 
         # Close the new socket
-        new_socket.close()
+        newSocket.close()
     # End loop
 
 
