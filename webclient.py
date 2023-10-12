@@ -2,7 +2,8 @@ import socket
 import sys
 
 def checkNumArgs(argv):
-    if len(argv) != 2 and len(argv) != 3:
+    # if len(argv) != 2 and len(argv) != 3:
+    if len(argv) not in {2, 3}:
         print("Incorrect number of arguments")
         exit(1)
 
@@ -43,7 +44,7 @@ def main():
     # Make a new socket and connect to it
     s = socket.socket()
     s.connect((address, port))
-    
+
     # Build and send the HTTP request
     req = buildHttpReq("", address)
     
