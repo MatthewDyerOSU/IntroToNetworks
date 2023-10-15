@@ -43,8 +43,16 @@ def receiveRequest(sock):
 
 def parseRequest(request):
     lines = request.split("\r\n")
+    if not lines:
+        print("No request exists to in parseRequest()")
+        exit(1)
+    # Break request into separate parts, header will be at index 0
     firstLine = lines[0]
     firstLineParts = firstLine.split()
+    if len(firstLineParts) != 3:
+        print("Request header formatted incorrectly in parseRequest()")
+        exit(1)
+    # Break request header into 3 parts: the method(GET, POST, etc.), the path, and the protocol (http, etc)
     method = firstLineParts[0]
     path = firstLineParts[1]
     protocol = firstLineParts[2]
@@ -52,12 +60,18 @@ def parseRequest(request):
 
 def getFileName(fullPath):
     pathAndFile = os.path.split(fullPath)
+    if not pathAndFile:
+        print("No path to split in getFileName()")
+        exit(1)
     pathOnly = pathAndFile[0]
     fileName = pathAndFile[1]
     return pathOnly, fileName
 
 def getExtension(fileName):
     nameAndExt = os.path.splitext(fileName)
+    if not nameAndExt:
+        print("no filename to split in getExtension()")
+        exit(1)
     name = nameAndExt[0]
     extension = nameAndExt[1]
     return name, extension
