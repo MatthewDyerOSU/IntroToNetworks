@@ -38,6 +38,7 @@ def nist_seconds_since_1900():
         request_data += data
     
     decoded_bytes = int.from_bytes(request_data, "big")
+    
     return decoded_bytes
 
 
