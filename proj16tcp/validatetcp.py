@@ -24,8 +24,7 @@ def get_length_and_checksum_and_data(datfile):
     # print(line)
     length = len(line)
     length = length.to_bytes()
-    checksum = line[16:18]
-    checksum = int.from_bytes(checksum)
+    checksum = int.from_bytes(line[16:18])
     # print(f'Length: {length}')
     # print(f'Checksum: {checksum}')
     return length, checksum, line
@@ -44,24 +43,17 @@ def generate_tcp_zero_chksm(data):
     # print(tcp_zero_chksum)
     return tcp_zero_chksum
 
-def checksum(pseudo_header, tcp_data):
-    data = pseudo_header + tcp_data
-    total = 0
-    for word in data:
-        total += word
-        total = (total & 0xffff) + (total >> 16)
-    return (~total) & 0xffff
-
-def generate_words(pseudo_header, tcp_zero_chksm):
+def checksum(pseudo_header, tcp_zero_chksm):
     data = pseudo_header + tcp_zero_chksm
     offset = 0
-    words = []
+    total = 0
     while offset < len(data):
         word = int.from_bytes(data[offset:offset+2], "big")
-        words += word
-    return words
+        total += word
+        offset += 2
+        total = (total & 0xffff) + (total >> 16)
+    return (~total) & 0xffff
     
-
 
 def main():
     # Read in the tcp_addrs_n.txt file
@@ -76,7 +68,7 @@ def main():
     # print(dest_bytes)
 
     # Read in the tcp_data_0.dat file
-    length, checksum, data = get_length_and_checksum_and_data('tcp_data_0.dat')
+    length, chksm_a, data = get_length_and_checksum_and_data('tcp_data_0.dat')
 
     # Function that generates the IP pseudo header bytes from the IP
     # addresses from tcp_addrs_n.txt and the TCP length from the tcp_data_n.dat file
@@ -86,13 +78,14 @@ def main():
     tcp_zero_chksum = generate_tcp_zero_chksm(data)
 
     # Concatenate the pseudo header and the TCP data with zero checksum
-
-
     # Compute the checksum of that concatenation
+    chksm_b = checksum(pseudo_header, tcp_zero_chksum)
 
     # Extract the checksum from the original data in tcp_data_0.dat
 
     # Compare the two checksums. If they're identical, it works!
+    print(chksm_a)
+    print(chksm_b)
 
     # Modify your code to run it on all 10 of the data files. The first 5 files
     # should have matching checksums! The second five files should not! That is,
