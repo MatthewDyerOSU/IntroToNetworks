@@ -2,6 +2,10 @@ PROTOCOL = b'\x06'
 ZERO_BYTE = b'\x00'
 
 def get_source_and_dest(textfile):
+    '''
+    Function that takes a textfile with source and destination IP addresses
+    and returns the source and destination IPs separately.
+    '''
     with open(textfile) as f:
         line = f.readline()
     line_array = line.split()
@@ -10,6 +14,9 @@ def get_source_and_dest(textfile):
     return source, dest
 
 def ip_to_bytes(ip):
+    '''
+    Takes an IP address and converts it to a bytestring without the dots
+    '''
     bytestring = b''
     int_array = ip.split(".")
     for i in int_array:
@@ -17,18 +24,30 @@ def ip_to_bytes(ip):
     return bytestring
 
 def get_length_and_checksum_and_data(datfile):
+    '''
+    Takes a .dat file and returns he length of the data, the checksum at
+    offsets 16 and 17, as well as the data as a whole
+    '''
     with open(datfile, 'rb') as f:
-        line = f.readline()
-    length = len(line)
+        data = f.readline()
+    length = len(data)
     length = length.to_bytes(2, byteorder='big')
-    checksum = int.from_bytes(line[16:18])
-    return length, checksum, line
+    checksum = int.from_bytes(data[16:18])
+    return length, checksum, data
 
-def generate_pseudo_header(source, dest, protocol, length):
+def generate_pseudo_header(source, dest, protocol, length) -> bytes:
+    '''
+    creates a header out of the source IP bytes, the destination IP bytes,
+    two zero bytes, a protocol byte, and the length of the data represented
+    as two bytes and returns said header in bytes
+    '''
     header = b''.join((source, dest, ZERO_BYTE, protocol, length))
     return header
 
 def generate_tcp_zero_chksm(data):
+    '''
+    takes TCP data and changes the checksum bytes at offset 16 and 17 to zeros
+    '''
     tcp_zero_chksum = data[:16] + b'\x00\x00' + data[18:]
     # if number of bytes is odd, pad on the right with a zero byte to make even
     if len(tcp_zero_chksum) % 2 == 1:
@@ -36,6 +55,17 @@ def generate_tcp_zero_chksm(data):
     return tcp_zero_chksum
 
 def checksum(pseudo_header, tcp_zero_chksm):
+    '''
+    Concatenates the tcp header with the checksum set to zero bytes to the
+    pseudo header, iterates over all the words (2 bytes) converting each to
+    an int. Each word converted to an int is added to a total, then bitwise
+    AND is performed, isolating the lower 16 bits of total, setting all higher
+    bits to zero. A bitwise right shift operation is performed on total by 16
+    positions, shifting the lower 16 bits out. The results of the bitwise and
+    operation and the bitwise right shift are added together, effectively 
+    adding the lower 16 bits (after masking) and the higher 16 bits 
+    (after shifting) of the total value
+    '''
     data = pseudo_header + tcp_zero_chksm
     offset = 0
     total = 0
@@ -57,7 +87,7 @@ def main():
         source_bytes = ip_to_bytes(source)
         dest_bytes = ip_to_bytes(dest)
 
-        # Read in the tcp_data_0.dat file
+        # Read in the tcp_data_n.dat file
         # Extract the checksum from the original data in tcp_data_n.dat
         length, chksm_a, data = get_length_and_checksum_and_data(f'tcp_data_{i}.dat')
 
