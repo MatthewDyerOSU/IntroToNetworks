@@ -23,7 +23,7 @@ def get_next_word_packet(s):
     global packet_buffer
     while True:
         if len(packet_buffer) >= 2:
-            packet_size = packet_buffer[1]
+            packet_size = int.from_bytes(packet_buffer[:2], 'big')
             if len(packet_buffer) >= packet_size + 2:
                 packet_data = packet_buffer[:packet_size+2]
                 packet_buffer = packet_buffer[packet_size+2:]
