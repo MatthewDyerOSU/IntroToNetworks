@@ -36,34 +36,13 @@ def value_to_ipv4(addr):
     addr:   0x01020304 0b00000001000000100000001100000100 16909060
     return: "1.2.3.4"
     """
-
-    # addr_string = str(addr)
-
-    # if addr_string.startswith("0x"):
-    #     value = addr_string[2:]
-    # elif addr_string.startswith("0b"):
-    #     value = int(addr_string, 2)
-    # else:
-    #     value = int(addr_string)
-
-    # print(f'Value: {value}')
-    # print(f'Hex Value before slice: {hex(value)}')
-    # hex_val = format(int(hex(value)[2:]), '08x')
-    # print(f'Hex Value: {hex_val}')
-
     addr_string = ""
     hex_val = format(addr, '08x')
     for i in range(0, len(hex_val), 2):
-        print(f'Hex byte: {hex_val[i:i+2]}')
-        # print(f'Hex value: {str(int(hex_val[i:i+2], 16))}')
         addr_string += str(int(hex_val[i:i+2], 16))
         addr_string += "."
 
-    print(addr_string)
-
-
-
-   
+    return addr_string[:-1]
 
 def get_subnet_mask_value(slash):
     """
@@ -184,8 +163,12 @@ def my_tests():
     dec_value = ipv4_to_value("255.255.0.0")
     print(f'Decimal Value: {dec_value}')
 
-    value_to_ipv4(0b11111111111111110000000000000000)
-    value_to_ipv4(16909060)
+    addr = value_to_ipv4(0b11111111111111110000000000000000)
+    print(f'Address: {addr}')
+    addr = value_to_ipv4(16909060)
+    print(f'Address: {addr}')
+    addr = value_to_ipv4(0x01020304)
+    print(f'Address: {addr}')
     # Add custom test code here
 
 ## -------------------------------------------
