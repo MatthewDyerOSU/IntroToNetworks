@@ -51,7 +51,8 @@ def value_to_ipv4(addr):
     # hex_val = format(int(hex(value)[2:]), '08x')
     # print(f'Hex Value: {hex_val}')
 
-    # addr_string = ""
+    addr_string = ""
+    hex_val = format(addr, '08x')
     for i in range(0, len(hex_val), 2):
         print(f'Hex byte: {hex_val[i:i+2]}')
         # print(f'Hex value: {str(int(hex_val[i:i+2], 16))}')
