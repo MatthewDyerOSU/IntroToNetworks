@@ -74,7 +74,7 @@ def get_subnet_mask_value(slash):
 def ips_same_subnet(ip1, ip2, slash):
     """
     Given two dots-and-numbers IP addresses and a subnet mask in slash
-    notataion, return true if the two IP addresses are on the same
+    notation, return true if the two IP addresses are on the same
     subnet.
 
     Returns a boolean.
@@ -97,9 +97,15 @@ def ips_same_subnet(ip1, ip2, slash):
     slash:  "/16"
     return: False
     """
+    ip_val_1 = ipv4_to_value(ip1)
+    ip_val_2 = ipv4_to_value(ip2)
 
-    # TODO -- write me!
-    pass
+    mask = get_subnet_mask_value(slash)
+
+    subnet_1 = ip_val_1 & mask
+    subnet_2 = ip_val_2 & mask
+
+    return subnet_1 == subnet_2
 
 def get_network(ip_value, netmask):
     """
@@ -185,7 +191,11 @@ def my_tests():
     print(f'Subnet Mask Val: {mask_val}')
     mask_val = get_subnet_mask_value("/16")
     print(f'Subnet Mask Val: {mask_val}')
-    # Add custom test code here
+    
+    equal_or_not = ips_same_subnet("10.23.121.17", "10.23.121.225", "/23")
+    print(equal_or_not)
+    equal_or_not = ips_same_subnet("10.23.230.22", "10.24.121.225", "/16")
+    print(equal_or_not)
 
 ## -------------------------------------------
 ## Do not modify below this line
