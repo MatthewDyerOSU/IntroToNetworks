@@ -165,59 +165,59 @@ def find_router_for_ip(routers, ip):
 # Uncomment this code to have it run instead of the real main.
 # Be sure to comment it back out before you submit!
 
-def my_tests():
-    print("-------------------------------------")
-    print("This is the result of my custom tests")
-    print("-------------------------------------")
+# def my_tests():
+#     print("-------------------------------------")
+#     print("This is the result of my custom tests")
+#     print("-------------------------------------")
 
-    print(hex(get_subnet_mask_value("192.168.1.12/24")))
-    dec_val = ipv4_to_value("10.100.30.90")
-    print(hex(dec_val))
-    print(dec_val)
-    print(bin(dec_val))
+#     print(hex(get_subnet_mask_value("192.168.1.12/24")))
+#     dec_val = ipv4_to_value("10.100.30.90")
+#     print(hex(dec_val))
+#     print(dec_val)
+#     print(bin(dec_val))
 
-    dec_value = ipv4_to_value("255.255.0.0")
-    print(f'Decimal Value: {dec_value}')
-    dec_value = ipv4_to_value("1.2.3.4")
-    print(f'Decimal Value: {dec_value}')
-    dec_value = ipv4_to_value("192.168.0.1")
-    print(f'Decimal Value: {dec_value}')
+#     dec_value = ipv4_to_value("255.255.0.0")
+#     print(f'Decimal Value: {dec_value}')
+#     dec_value = ipv4_to_value("1.2.3.4")
+#     print(f'Decimal Value: {dec_value}')
+#     dec_value = ipv4_to_value("192.168.0.1")
+#     print(f'Decimal Value: {dec_value}')
 
-    addr = value_to_ipv4(0b11111111111111110000000000000000)
-    print(f'Address: {addr}')
-    addr = value_to_ipv4(16909060)
-    print(f'Address: {addr}')
-    addr = value_to_ipv4(0x01020304)
-    print(f'Address: {addr}')
-    addr = value_to_ipv4(3232235521)
-    print(f'Address: {addr}')
+#     addr = value_to_ipv4(0b11111111111111110000000000000000)
+#     print(f'Address: {addr}')
+#     addr = value_to_ipv4(16909060)
+#     print(f'Address: {addr}')
+#     addr = value_to_ipv4(0x01020304)
+#     print(f'Address: {addr}')
+#     addr = value_to_ipv4(3232235521)
+#     print(f'Address: {addr}')
 
-    mask_val = get_subnet_mask_value("10.20.30.40/23")
-    print(f'Subnet Mask Val: {mask_val}')
-    mask_val = get_subnet_mask_value("/16")
-    print(f'Subnet Mask Val: {mask_val}')
+#     mask_val = get_subnet_mask_value("10.20.30.40/23")
+#     print(f'Subnet Mask Val: {mask_val}')
+#     mask_val = get_subnet_mask_value("/16")
+#     print(f'Subnet Mask Val: {mask_val}')
     
-    equal_or_not = ips_same_subnet("10.23.121.17", "10.23.121.225", "/23")
-    print(equal_or_not)
-    equal_or_not = ips_same_subnet("10.23.230.22", "10.24.121.225", "/16")
-    print(equal_or_not)
+#     equal_or_not = ips_same_subnet("10.23.121.17", "10.23.121.225", "/23")
+#     print(equal_or_not)
+#     equal_or_not = ips_same_subnet("10.23.230.22", "10.24.121.225", "/16")
+#     print(equal_or_not)
    
-    network = get_network(0x01020304, 0xffffff00)
-    print(f'Network: {hex(network)}')
+#     network = get_network(0x01020304, 0xffffff00)
+#     print(f'Network: {hex(network)}')
 
-    routers = {
-        "1.2.3.1": {
-            "netmask": "/24"
-        },
-        "1.2.4.1": {
-            "netmask": "/24"
-        }
-    }
+#     routers = {
+#         "1.2.3.1": {
+#             "netmask": "/24"
+#         },
+#         "1.2.4.1": {
+#             "netmask": "/24"
+#         }
+#     }
 
-    result = find_router_for_ip(routers, "1.2.3.5")
-    print(f'Result: {result}')
-    result = find_router_for_ip(routers, "1.2.5.6")
-    print(f'Result: {result}')
+#     result = find_router_for_ip(routers, "1.2.3.5")
+#     print(f'Result: {result}')
+#     result = find_router_for_ip(routers, "1.2.5.6")
+#     print(f'Result: {result}')
 
 ## -------------------------------------------
 ## Do not modify below this line
