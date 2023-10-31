@@ -117,9 +117,7 @@ def get_network(ip_value, netmask):
     netmask:  0xffffff00
     return:   0x01020300
     """
-
-    # TODO -- write me!
-    pass
+    return hex(ip_value & netmask)
 
 def find_router_for_ip(routers, ip):
     """
@@ -152,17 +150,18 @@ def find_router_for_ip(routers, ip):
         "1.2.3.1": {
             "netmask": "/24"
         },
-        "1.2.4.1": {
+        "1.2.4.1": 
             "netmask": "/24"
         }
     }
     ip: "1.2.5.6"
     return: None
     """
-
-    # TODO -- write me!
-    pass
-
+    for key in routers:
+        found = ips_same_subnet(key, ip, routers[key]["netmask"])
+        if found:
+            return key
+    return None
 # Uncomment this code to have it run instead of the real main.
 # Be sure to comment it back out before you submit!
 
@@ -196,6 +195,23 @@ def my_tests():
     print(equal_or_not)
     equal_or_not = ips_same_subnet("10.23.230.22", "10.24.121.225", "/16")
     print(equal_or_not)
+   
+    network = get_network(0x01020304, 0xffffff00)
+    print(f'Network: {network}')
+
+    routers = {
+        "1.2.3.1": {
+            "netmask": "/24"
+        },
+        "1.2.4.1": {
+            "netmask": "/24"
+        }
+    }
+
+    result = find_router_for_ip(routers, "1.2.3.5")
+    print(f'Result: {result}')
+    result = find_router_for_ip(routers, "1.2.5.6")
+    print(f'Result: {result}')
 
 ## -------------------------------------------
 ## Do not modify below this line
