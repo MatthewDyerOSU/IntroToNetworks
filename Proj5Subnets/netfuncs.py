@@ -182,7 +182,11 @@ def find_router_for_ip(routers, ip):
 #     print(f'Decimal Value: {dec_value}')
 #     dec_value = ipv4_to_value("192.168.0.1")
 #     print(f'Decimal Value: {dec_value}')
+#     dec_value = ipv4_to_value("192.0.2.37")
+#     print(hex(dec_value))
 
+#     addr = value_to_ipv4(3405804026)
+#     print(addr)
 #     addr = value_to_ipv4(0b11111111111111110000000000000000)
 #     print(f'Address: {addr}')
 #     addr = value_to_ipv4(16909060)
