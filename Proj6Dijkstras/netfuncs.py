@@ -124,7 +124,7 @@ def find_router_for_ip(routers, ip):
     Search a dictionary of routers (keyed by router IP) to find which
     router belongs to the same subnet as the given IP.
 
-    Return None if no routers is on the same subnet as the given IP.
+    Return None if no routers are on the same subnet as the given IP.
 
     FOR FULL CREDIT: you must do this by calling your ips_same_subnet()
     function.
