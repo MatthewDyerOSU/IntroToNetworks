@@ -6,10 +6,34 @@ import sys
 import socket
 import select
 
+HOST = '127.0.0.1'
+
 def run_server(port):
-    s = socket.socket()
-    s.bind()
-    s.listen()
+    
+    listening_socket = socket.socket()
+    listening_socket.bind((HOST, port))
+    listening_socket.listen()
+    print("waiting for connections")
+    read_set = {listening_socket}
+
+    while True:
+        ready_to_read, _, _ = select.select(read_set, {}, {})
+        for s in ready_to_read:
+            if s == listening_socket:
+                conn, addr = s.accept()
+                print(f'{addr}: connected')
+                read_set.add(conn)
+            else:
+                addr, port = s.getpeername()
+                data = s.recv(4096)
+                if data:
+                    data_len = len(data)
+                    print(f"('{addr}', {port}) {data_len} bytes: {data}")
+                else:
+                    read_set.remove(s)
+                    s.close()
+                    print(f"('{addr}', {port}): disconnected")
+
 
 
 #--------------------------------#
