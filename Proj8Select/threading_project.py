@@ -7,14 +7,14 @@ def add_range(name, some_range, result, i):
     result[i] = sum(iterable_range)
 
 def main():
-    # ranges = sys.argv[1]
-    ranges = [
-    [10, 20],
-    [1, 5],
-    [70, 80],
-    [27, 92],
-    [0, 16]
-]
+    ranges = sys.argv[1]
+#     ranges = [
+#     [10, 20],
+#     [1, 5],
+#     [70, 80],
+#     [27, 92],
+#     [0, 16]
+# ]
     n = len(ranges)
     result = [0] * n
     threads = []
