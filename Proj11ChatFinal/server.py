@@ -8,11 +8,9 @@ import select
 
 # When a client connects/disconnects, this also is broadcasted
 
-
-
-
-
 HOST = '127.0.0.1'
+
+client_packet_buffers = {}
 
 # Usage: python chat_server.py 3490
 #   there is no default port, must be specified on command line
@@ -23,7 +21,8 @@ def run_server(port):
     # since multiple clients will be sending data streams to the server...
     #   the server needs to maintain a packet buffer for each client.
     #       python dict matching clients socket as key to buffer
-    client_packet_buffers = {}
+    
+    global client_packet_buffers
 
     listening_socket = socket.socket()
     listening_socket.bind((HOST, port))
@@ -43,7 +42,7 @@ def run_server(port):
                 print(f'{addr}: connected')
                 read_set.add(conn)
                 # add packet buffer to dictonary for the client
-                client_packet_buffers[conn] = []
+                client_packet_buffers[conn] = b''
             else:
                 addr, port = s.getpeername()
                 packet = s.recv(4096)
