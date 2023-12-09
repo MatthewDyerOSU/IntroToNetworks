@@ -133,8 +133,6 @@ def dijkstras_shortest_path(routers, dest_ip, src_ip):
     function. Having it all built as a single wall of code is a recipe
     for madness.
     """   
-    
-
     to_visit, distance, parent, first_router, final_router = setup(src_ip, dest_ip, routers)
     
     if first_router == final_router:
