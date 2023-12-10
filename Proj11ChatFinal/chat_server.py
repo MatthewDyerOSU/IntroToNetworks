@@ -223,29 +223,102 @@ def broadcast(packet):
             del client_packet_buffers[client_socket]
 
 def accept_new_connection(listening_socket, read_set):
-    """Accepts a new connection and initializes client data."""
+    """
+    Accepts a new connection from a client.
+
+    Parameters:
+    - listening_socket (socket): The server's listening socket.
+    - read_set (set): The set of sockets being monitored for incoming data.
+
+    Actions:
+    - Accepts a new connection using the listening socket.
+    - Adds the new client socket to the read_set for monitoring.
+    - Initializes the client's packet buffer with an empty nickname and data buffer.
+    """
     conn, addr = listening_socket.accept()
     read_set.add(conn)
     client_packet_buffers[conn] = {"nick": "", "data": b""}
 
-def run_server(port): 
+def process_client_packet(sock, read_set):
     """
-    Runs the chat server, managing client connections and packet processing.
+    Processes an incoming packet from a connected client.
 
     Parameters:
-    - port (int): The port number on which the server listens for incoming connections.
+    - sock (socket): The client socket from which the packet is received.
+    - read_set (set): The set of sockets being monitored for incoming data.
 
-    This function sets up a listening socket, accepts incoming connections, and continuously
-    processes packets from connected clients. It uses the select() function to efficiently handle
-    multiple connections. The server reacts to "hello" packets by adding clients to the dictionary
-    of connected clients and broadcasting "join" packets. It also handles "chat" packets, broadcasts
-    chat messages, and reacts to "/quit" messages by broadcasting "leave" packets. If a client
-    disconnects, the function cleans up the associated resources.
+    Actions:
+    - Attempts to retrieve the next packet from the client's data buffer.
+    - If a packet is available, decodes and handles the packet.
+    - If no packet is available, the client is considered disconnected, and the connection is closed.
+    - Handles potential `ConnectionResetError` by closing the client connection.
+    """
+    try:
+        packet = get_next_packet(sock)
+        if packet:
+            json_payload = packet[2:]
+            decoded_packet = json.loads(json_payload.decode())
+            handle_decoded_packet(sock, decoded_packet)
+        else:
+            # If no packet is available, the client has disconnected
+            close_client_connection(sock, read_set)
+    except ConnectionResetError:
+        close_client_connection(sock, read_set)
 
-    Example:
-    ```
-    run_server(12345)
-    ```
+def handle_decoded_packet(sock, decoded_packet):
+    """
+    Handles a decoded packet from a connected client.
+
+    Parameters:
+    - sock (socket): The client socket from which the packet originated.
+    - decoded_packet (dict): The decoded packet received from the client.
+
+    Actions:
+    - Extracts the packet type from the decoded packet.
+    - Performs appropriate actions based on the packet type:
+      - For "hello" packets, handles the hello packet, builds a join packet, and broadcasts it.
+      - For "chat" packets, handles chat packets, builds and broadcasts the corresponding packets.
+      - Prints an error message for invalid packet types.
+    """
+    packet_type = decoded_packet.get("type")
+
+    if packet_type == "hello":
+        name = handle_hello_packet(sock, decoded_packet)
+        join_packet = build_join_packet(name)
+        broadcast(join_packet)
+    elif packet_type == "chat":
+        if decoded_packet["message"] == "/quit":
+            leave_packet = build_leave_packet(sock)
+            broadcast(leave_packet)
+        else:
+            chat_packet = handle_chat_packet(sock, decoded_packet)
+            broadcast(chat_packet)
+    else:
+        print("Invalid Packet Type")
+
+def close_client_connection(sock, read_set):
+    """
+    Closes a client connection and performs cleanup.
+
+    Parameters:
+    - sock (socket): The client socket to be closed.
+    - read_set (set): The set of sockets being monitored by the server.
+
+    Actions:
+    - Removes the client socket from the read_set.
+    - Removes the client socket's buffer from the client_packet_buffers.
+    - Closes the client socket.
+    """
+    read_set.remove(sock)
+    client_packet_buffers.pop(sock)
+    sock.close()
+
+def run_server(port): 
+    """
+    Run the chat server and handle incoming connections and client packets.
+
+    Parameters:
+    - port (int): The port number on which the server will listen.
     """
     global client_packet_buffers
 
@@ -262,33 +335,7 @@ def run_server(port):
             if s == listening_socket:
                 accept_new_connection(listening_socket, read_set)
             else:
-                addr, port = s.getpeername()
-                try:
-                    packet = get_next_packet(s)
-                    if packet:
-                        json_payload = packet[2:]
-                        decoded_packet = json.loads(json_payload.decode())
-                        packet_type = decoded_packet.get("type")
-                        if packet_type == "hello":
-                            name = handle_hello_packet(s, decoded_packet)   
-                            join_packet = build_join_packet(name)
-                            broadcast(join_packet)
-                        elif packet_type == "chat":
-                            if decoded_packet["message"] == "/quit":
-                                leave_packet = build_leave_packet(s)
-                                broadcast(leave_packet)
-                            else:
-                                chat_packet = handle_chat_packet(s, decoded_packet)
-                                broadcast(chat_packet)
-                        else:
-                            print(f'Invalid packet type')
-                            return 1
-                    else:
-                        break
-                except ConnectionResetError:
-                    read_set.remove(s)
-                    client_packet_buffers.pop(s)
-                    s.close()
+                process_client_packet(s, read_set)
                     
 
 def main(argv):
