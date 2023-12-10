@@ -30,7 +30,7 @@ def build_chat_packet(message):
     }
     json_data = json.dumps(data)
     size = len(json_data)
-    packet = size + json_data
+    packet = str(size) + json_data
     return packet
 
 def build_hello_packet(name):
@@ -40,28 +40,60 @@ def build_hello_packet(name):
         }
     json_data = json.dumps(data)
     size = len(json_data)
-    packet = size + json_data
+    packet = str(size) + json_data
     return packet
+
+def handle_chat_packet(packet):
+    name = packet.get("nick")
+    message = packet.get("message")
+    ret = f"{name}: {message}"
+    return ret
+
+def handle_join_packet(packet):
+    name = packet.get("nick")
+    ret = f"*** {name} has joined the chat"
+    return ret
+
+def handle_leave_packet(packet):
+    name = packet.get("nick")
+    ret = f"*** {name} has left the chat"
+    return ret
 
 def send_thread(sock, name):
     hello_packet = build_hello_packet(name)
     sock.send(hello_packet.encode())
     while True:
         user_input = read_command(f'{name}> ')
-        if user_input.lower() == '/quit':
-            sock.send(f'*** {name} has left the chat')
-            break
         chat_packet = build_chat_packet(user_input)
         sock.send(chat_packet.encode())
+        if user_input == "/quit":
+            break
 
 def receive_thread(sock):
     while True:
         try:
-            data = sock.recv(4096).decode()
-            if not data:
+            packet = sock.recv(4096).decode()
+            if not packet:
                 break
-            print_message(data)
+            decoded_packet = json.loads(packet[2:])
+            message_type = decoded_packet.get("type")
+            if not decoded_packet:
+                break
+            elif message_type == "chat":
+                message = handle_chat_packet(decoded_packet)
+            elif message_type == "join":
+                message = handle_join_packet(decoded_packet)
+            elif message_type == "leave":
+                message = handle_leave_packet(decoded_packet)
+            else:
+                print_message("Unknown message type")
+                break
+            print_message(message)
         except ConnectionResetError:
+            print_message("Connection Reset Error")
+            break
+        except json.JSONDecodeError:
+            print_message("Invalid JSON format for message")
             break
 
 def main(argv):

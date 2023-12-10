@@ -16,15 +16,26 @@ client_packet_buffers = {}
 def usage():
     print("Usage: python server.py port")
 
-def handle_hello_packet(socket, packet):
+def handle_hello_packet(sock, packet):
     global client_packet_buffers
-    name = packet.get("name")
-    client_packet_buffers[socket]["name"] = name
+    name = packet.get("nick")
+    client_packet_buffers[sock]["nick"] = name
     return name
 
-def handle_chat_packet(packet):
+def handle_chat_packet(sock, packet):
     global client_packet_buffers
-    pass
+    type = packet.get("type")
+    name = client_packet_buffers[sock]["nick"]
+    message = packet.get("message")
+    data = {
+        "type": f"{type}",
+        "nick": f"{name}",
+        "message": f"{message}"
+    }
+    json_data = json.dumps(data)
+    size = len(json_data)
+    packet = str(size) + json_data
+    return packet
 
 def build_join_packet(name):
     global client_packet_buffers
@@ -34,19 +45,19 @@ def build_join_packet(name):
     }
     json_data = json.dumps(data)
     size = len(json_data)
-    packet = size + json_data
+    packet = str(size) + json_data
     return packet
 
-def build_leave_packet(socket):
+def build_leave_packet(sock):
     global client_packet_buffers
-    name = client_packet_buffers[socket]["name"]
+    name = client_packet_buffers[sock]["nick"]
     data = {
         "type": "leave",
         "nick": f"{name}"
     }
     json_data = json.dumps(data)
     size = len(json_data)
-    packet = size + json_data
+    packet = str(size) + json_data
     return packet
 
 def broadcast(packet):
@@ -87,33 +98,36 @@ def run_server(port):
                 # build join packet
                 read_set.add(conn)
                 # add packet buffer to dictonary for the client
-                client_packet_buffers[conn] = {"name": "", "data": ""}
+                client_packet_buffers[conn] = {"nick": "", "data": ""}
             else:
                 addr, port = s.getpeername()
-                packet = s.recv(4096)
-                if packet:
-                    decoded_packet = json.loads(packet.decode())
-                    packet_type = decoded_packet.get("type")
-                    if packet_type == "hello":
-                        name = handle_hello_packet(s, decoded_packet)   
-                        join_packet = build_join_packet(name)
-                        broadcast(join_packet.encode())
-                    elif packet_type == "chat":
-                        handle_chat_packet(s, decoded_packet)
+                try:
+                    packet = s.recv(4096)
+                    if packet:
+                        json_payload = packet[2:]
+                        decoded_packet = json.loads(json_payload.decode())
+                        print(f"Decoded Packet: {decoded_packet}")
+                        packet_type = decoded_packet.get("type")
+                        if packet_type == "hello":
+                            name = handle_hello_packet(s, decoded_packet)   
+                            join_packet = build_join_packet(name)
+                            broadcast(join_packet.encode())
+                        elif packet_type == "chat":
+                            if decoded_packet["message"] == "/quit":
+                                leave_packet = build_leave_packet(s)
+                                broadcast(leave_packet.encode())
+                            else:
+                                chat_packet = handle_chat_packet(s, decoded_packet)
+                                broadcast(chat_packet.encode())
+                        else:
+                            print(f'Invalid packet type')
+                            return 1
                     else:
-                        print(f'Invalid packet type')
-                        return 1
-                    broadcast(packet)
-                    data_len = len(packet)
-                    print(f"('{addr}', {port}) {data_len} bytes: {packet}")
-                else:
-                    leave_packet = build_leave_packet(s)
-                    broadcast(leave_packet.encode())
+                        break
+                except ConnectionResetError:
                     read_set.remove(s)
                     client_packet_buffers.pop(s)
                     s.close()
-                    # build leave packet
-                    print(f"('{addr}', {port}): disconnected")
                     
 
 def main(argv):
