@@ -4,33 +4,23 @@ import socket
 import threading
 import json
 
-# init_windows(): call this first before any other UI-oriented I/O of any
-#   kind. Should also be called before you start the receiver thread since 
-#   that thread does I/O.
-
-# end_windows(): call this when your program completes to clean everything up
-
-# read_command(): this prints a prompt out at the bottom of the screen 
-#   and accepts user input. It returns the line the user entered once
-#   they hit the ENTER key.
-#   Ex. s = read_command("Enter something> ")
-#   The function takes care of screen placement of the element
-
-# print_message(): prints a message to the output potion of the screen. The
-#   handle scrolling and making sure the output doesn't interfere with the 
-#   input from read_command(). No need to include newline.
-
 def usage():
     print("Usage: client.py nickname server_address server_port")
+
+def encode_packet_and_size(data):
+    json_data = json.dumps(data)
+    encoded_data = json_data.encode()
+    size = len(json_data)
+    size_bytes = size.to_bytes(2, 'big')
+    packet = size_bytes + encoded_data
+    return packet
 
 def build_chat_packet(message):
     data = {
         "type": "chat",
         "message": f"{message}"
     }
-    json_data = json.dumps(data)
-    size = len(json_data)
-    packet = str(size) + json_data
+    packet = encode_packet_and_size(data)
     return packet
 
 def build_hello_packet(name):
@@ -38,9 +28,7 @@ def build_hello_packet(name):
         "type": "hello",
         "nick": f"{name}"
         }
-    json_data = json.dumps(data)
-    size = len(json_data)
-    packet = str(size) + json_data
+    packet = encode_packet_and_size(data)
     return packet
 
 def handle_chat_packet(packet):
@@ -61,11 +49,11 @@ def handle_leave_packet(packet):
 
 def send_thread(sock, name):
     hello_packet = build_hello_packet(name)
-    sock.send(hello_packet.encode())
+    sock.send(hello_packet)
     while True:
         user_input = read_command(f'{name}> ')
         chat_packet = build_chat_packet(user_input)
-        sock.send(chat_packet.encode())
+        sock.send(chat_packet)
         if user_input == "/quit":
             break
 
@@ -136,6 +124,8 @@ def main(argv):
 
     send_thread_instance.join()
     # There is no shared data between threads so no need for mutexes or the like
+
+    end_windows()
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv))
